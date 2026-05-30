@@ -64,12 +64,12 @@ interface AreaMeta {
 }
 
 const LAYER_CONFIG: Omit<LayerState, "data" | "loading">[] = [
-  { name: "parques", label: "Parques", color: "#22c55e", visible: true, group: VERDE_GROUP },
-  { name: "jardines", label: "Jardines", color: "#84cc16", visible: true, group: VERDE_GROUP },
-  { name: "arbolado", label: "Arbolado", color: "#14532d", visible: true, group: VERDE_GROUP },
+  { name: "parques", label: "Parques", color: "#22c55e", visible: false, group: VERDE_GROUP },
+  { name: "jardines", label: "Jardines", color: "#84cc16", visible: false, group: VERDE_GROUP },
+  { name: "arbolado", label: "Arbolado", color: "#14532d", visible: false, group: VERDE_GROUP },
   { name: "secciones_censales", label: "Secciones censales", color: "#3b82f6", visible: true },
   { name: "barrios", label: "Barrios", color: "#7c3aed", visible: false },
-  { name: "estaciones_aire", label: "Estaciones calidad del aire", color: "#ef4444", visible: true },
+  { name: "estaciones_aire", label: "Estaciones calidad del aire", color: "#ef4444", visible: false },
   { name: "distritos", label: "Distritos", color: "#f59e0b", visible: false },
   // Equipamientos: paleta diferenciada para que no choquen entre sí ni con
   // las capas principales (secciones/barrios/estaciones).
