@@ -16,10 +16,10 @@ const NIVEL_LABELS: Record<string, string> = {
 
 const METRIC_LABELS: Record<SeccionMetric, string> = {
   pop: "Habitantes",
-  verde_hab: "Verde por hab.",
-  no2_exposure: "Exposición NO₂",
   renta: "Renta neta media",
   vft_ratio: "VFTs / 100 viviendas",
+  verde_hab: "Verde por hab.",
+  no2_exposure: "Exposición NO₂",
 };
 
 interface NivelOption {
@@ -95,10 +95,9 @@ export default function MapMode({
     { value: null, label: "Sin coropleta", hint: "ocultar capa de áreas" },
   ];
 
+  // Orden narrativo: personas → economía → vivienda → entorno.
   const metricas: { value: SeccionMetric; label: string; available: boolean; hint?: string }[] = [
     { value: "pop", label: METRIC_LABELS.pop, available: true },
-    { value: "verde_hab", label: METRIC_LABELS.verde_hab, available: hasVerdeHab },
-    { value: "no2_exposure", label: METRIC_LABELS.no2_exposure, available: hasNo2 },
     {
       value: "renta",
       label: METRIC_LABELS.renta,
@@ -114,6 +113,8 @@ export default function MapMode({
       available: hasVft,
       hint: hasVft ? "serie hist. desde 2016" : undefined,
     },
+    { value: "verde_hab", label: METRIC_LABELS.verde_hab, available: hasVerdeHab },
+    { value: "no2_exposure", label: METRIC_LABELS.no2_exposure, available: hasNo2 },
   ];
 
   const nivelLabel = activeLevel ? NIVEL_LABELS[activeLevel] : "Sin coropleta";
