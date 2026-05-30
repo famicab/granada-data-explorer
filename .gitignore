@@ -1,0 +1,37 @@
+# ─── Python ───────────────────────────────────────────────
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# ─── Secrets / entorno ────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ─── Frontend ─────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+
+# ─── Datos crudos pesados (reproducibles con scripts/build_*.py) ──
+# Se versiona solo backend/data/ (datos procesados que sirve la API).
+raw-data/
+*.pbf
+
+# ─── Documentación y notas internas (no se publican) ──────
+# La atribución de fuentes, metodología y métricas viven en README.md.
+docs/
+plans/
+prompts/
+
+# ─── Sistema operativo / editor ───────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+

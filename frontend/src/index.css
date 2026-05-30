@@ -1,0 +1,1438 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #f5f5f5;
+  color: #1a1a1a;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  position: relative;
+}
+
+/* ── Header ────────────────────────────────────────────── */
+
+.header {
+  background: #1e3a5f;
+  color: white;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.header h1 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.header span {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+.header-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.header-btn {
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  font-family: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.header-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Layer controls ────────────────────────────────────── */
+
+.controls {
+  display: flex;
+  gap: 12px;
+  padding: 10px 16px;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+
+.layer-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.layer-toggle input {
+  accent-color: #1e3a5f;
+}
+
+.subcontrols {
+  display: flex;
+  gap: 16px;
+  padding: 6px 16px 6px 36px; /* sangría para sugerir jerarquía */
+  background: #fafafa;
+  border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0;
+  overflow-x: auto;
+  font-size: 0.8rem;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+/* ── NO2 legend ────────────────────────────────────────── */
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 16px;
+  background: #fafafa;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 0.75rem;
+  color: #555;
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+
+.legend-title {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.box {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+/* ── Year slider ───────────────────────────────────────── */
+
+.year-slider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px 8px;
+  background: #fafafa;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 0.78rem;
+  color: #555;
+  flex-shrink: 0;
+}
+
+.year-slider input[type="range"] {
+  flex: 1;
+  min-width: 60px;
+  accent-color: #1e3a5f;
+  cursor: pointer;
+}
+
+.year-slider strong {
+  min-width: 42px;
+  text-align: right;
+  font-size: 0.9rem;
+  color: #1e3a5f;
+}
+
+.year-total {
+  font-size: 0.75rem;
+  color: #555;
+  white-space: nowrap;
+}
+.year-total-note {
+  color: #d97706;
+  font-weight: 700;
+  cursor: help;
+  /* Discrete underline so usuarios desktop ven que es hover-able. */
+  border-bottom: 1px dotted #d97706;
+  padding-bottom: 1px;
+}
+
+.play-btn {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  font-size: 0.85rem;
+  line-height: 1;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  background: #fff;
+  color: #1e3a5f;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.play-btn:hover {
+  background: #f5f5f5;
+}
+
+.play-btn[aria-pressed="true"] {
+  background: #1e3a5f;
+  color: #fff;
+  border-color: #1e3a5f;
+}
+
+/* ── Map ───────────────────────────────────────────────── */
+
+.map-container {
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── POI markers (equipamientos) ───────────────────────── */
+
+.poi-marker {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  border: 2px solid #ccc; /* color real lo inyecta el inline style */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+
+.poi-marker:hover {
+  transform: scale(1.15);
+  transition: transform 0.1s ease-out;
+}
+
+/* ── Station detail panel ──────────────────────────────── */
+
+.detail-panel {
+  position: absolute;
+  z-index: 1100;
+  bottom: 16px;
+  left: 16px;
+  width: 380px;
+  max-width: calc(100% - 32px);
+  /* Nunca más alto que el stage (menos los 16px de margen superior/inferior).
+     Antes no había max-height + scroll, así que con paneles largos (p. ej.
+     área con muchos indicadores + serie VFT) el header se salía por arriba
+     y el botón × quedaba inaccesible. */
+  max-height: calc(100% - 32px);
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 14px 10px;
+  background: #fff;
+  border-bottom: 1px solid #f1f5f9;
+  flex-shrink: 0;
+}
+
+.sp-body {
+  padding: 8px 14px 14px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  /* Evita que el scroll del panel "arrastre" el mapa o la página al
+     llegar a los bordes. */
+  overscroll-behavior: contain;
+}
+
+.sp-header strong {
+  font-size: 0.95rem;
+}
+
+.sp-header button {
+  border: none;
+  background: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #888;
+  padding: 0 4px;
+}
+
+.sp-sub {
+  color: #666;
+  font-size: 0.78rem;
+  margin-top: 2px;
+}
+
+.sp-no2 {
+  margin: 8px 0 2px;
+  font-weight: 600;
+}
+
+.sp-chart-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.sp-chart-title {
+  font-size: 0.78rem;
+  color: #444;
+}
+
+.sp-select {
+  font-size: 0.8rem;
+  padding: 3px 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  color: #1a1a1a;
+  cursor: pointer;
+}
+
+.sp-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-top: 2px;
+}
+
+.sp-otros {
+  margin-top: 10px;
+  font-size: 0.8rem;
+}
+
+.sp-otros summary {
+  cursor: pointer;
+  color: #1e3a5f;
+  font-weight: 600;
+}
+
+.sp-otros ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.sp-anio {
+  opacity: 0.6;
+}
+
+.sp-indicators {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+  font-size: 0.82rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sp-label {
+  color: #555;
+}
+
+.sp-indicators .sp-sub {
+  display: inline;
+  margin-top: 0;
+}
+
+.sp-subtypes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.sp-bar {
+  display: flex;
+  width: 100%;
+  height: 7px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: #eee;
+}
+
+.sp-subtypes-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+
+.sp-subtypes-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.sp-subtypes-item .dot {
+  width: 8px;
+  height: 8px;
+}
+
+/* ── Equipamientos (bloque dentro de AreaPanel) ───────── */
+
+.sp-equip {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+  font-size: 0.82rem;
+}
+
+.sp-equip-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #1e3a5f;
+  margin-bottom: 4px;
+}
+
+.sp-equip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sp-equip-item {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.sp-equip-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.sp-vft {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+  font-size: 0.82rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.sp-vft-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #6b21a8;
+  margin-bottom: 2px;
+}
+.sp-vft-alert {
+  margin-top: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: #fdf2f8;
+  color: #980043;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .detail-panel {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    max-width: none;
+    /* Bottom-sheet: deja ~25 % de pantalla para el mapa por encima.
+       Si el contenido es corto el panel sigue siendo "auto" (flex-column
+       sin altura mínima); el máx solo entra en juego al desbordar. */
+    max-height: 75vh;
+    border-radius: 14px 14px 0 0;
+  }
+  /* "Grab handle" visual: una línea gris fina arriba del header que
+     sugiere que es un bottom-sheet arrastrable (es solo afordancia
+     visual; no implementamos drag-to-dismiss para no romper Leaflet). */
+  .detail-panel .sp-header {
+    position: relative;
+    padding-top: 18px;
+  }
+  .detail-panel .sp-header::before {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 4px;
+    border-radius: 2px;
+    background: #d1d5db;
+  }
+}
+
+/* ── Rankings panel ────────────────────────────────────── */
+
+.rankings-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 320px;
+  background: #fff;
+  border-left: 1px solid #e0e0e0;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.08);
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+}
+
+.rp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0;
+}
+
+.rp-header strong {
+  font-size: 0.95rem;
+}
+
+.rp-header button {
+  border: none;
+  background: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #888;
+  padding: 0 4px;
+}
+
+.rp-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+
+.rp-tab {
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  font-family: inherit;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.rp-tab.active {
+  background: #1e3a5f;
+  border-color: #1e3a5f;
+  color: #fff;
+}
+
+.rp-list {
+  margin: 0;
+  padding: 6px 0;
+  list-style: none;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.rp-list li {
+  padding: 0;
+}
+
+.rp-item {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 0.82rem;
+  color: #1a1a1a;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rp-item:hover {
+  background: #f5f5f5;
+}
+
+.rp-rank {
+  font-weight: 600;
+  color: #1e3a5f;
+  font-size: 0.78rem;
+  text-align: right;
+}
+
+.rp-label {
+  color: #333;
+}
+
+.rp-value {
+  font-weight: 600;
+  color: #1e3a5f;
+  white-space: nowrap;
+}
+
+.rp-empty {
+  padding: 16px;
+  color: #888;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .rankings-panel {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: 60%;
+    border-left: none;
+    border-top: 1px solid #e0e0e0;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.12);
+  }
+}
+
+/* ── Demografía panel ──────────────────────────────────── */
+
+.demografia-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 380px;
+  background: #fff;
+  border-left: 1px solid #e0e0e0;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.08);
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+}
+
+/* Modo "vista completa": el panel ocupa el slot del mapa (flex:1 dentro
+   de .app) y reparte pirámide + serie en 2 columnas. */
+.demografia-panel.full {
+  position: static;
+  width: auto;
+  flex: 1;
+  min-height: 0;
+  border-left: none;
+  box-shadow: none;
+  background: #f5f7fa;
+}
+
+.demografia-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 14px;
+}
+
+.demografia-body.full {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-content: start;
+}
+
+/* Slot del año en la cabecera del panel de demografía. Vive dentro del
+   propio panel (no flotante) para que siempre sea visible junto con los
+   gráficos, no detrás de ellos. */
+.demografia-yearbar {
+  flex-shrink: 0;
+  padding: 8px 14px 4px;
+  border-bottom: 1px solid #eee;
+  background: #fff;
+}
+
+.year-slider-inline {
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.demo-card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0; /* permite que el SVG se encoja en grid */
+}
+
+.demo-card-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #1e3a5f;
+  margin: 0;
+}
+
+.demografia-body.full .piramide-svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.demografia-body.full .serie-svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Card que ocupa el ancho completo del grid (bajo pirámide+serie). El
+   SVG dentro se limita a un ancho razonable y se centra — evita que el
+   chart se vuelva enorme en pantallas anchas por el preserveAspectRatio. */
+.demo-card-wide {
+  grid-column: 1 / -1;
+}
+
+.demo-card-wide .serie {
+  /* width:100% es CRÍTICO aquí: dentro de un flex-column (.demo-card),
+     poner `margin: auto` en el eje cross desactiva el align-items:stretch
+     y el hijo se vuelve content-sized — el ancho lo dicta el max-content
+     intrínseco del texto de fondo (.renta-fuente). Resultado sin esto:
+     una gráfica con texto corto se encoge a ~387 px aunque max-width
+     diga 1000 px, mientras que una con texto largo llega a ~880 px. */
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.renta-fuente {
+  margin-top: 4px;
+  font-size: 0.7rem;
+  color: #888;
+  font-style: italic;
+}
+
+/* ── Big-number header para gráficas municipales (panel Ciudad) ──────
+   Patrón compartido por la tab Turismo y Renta IRPF: cifra principal
+   grande a la izquierda, métricas secundarias a la derecha. Cada chart
+   inyecta su acento (PuRd para turismo, OrRd para renta) vía la
+   variable CSS --muni-accent que se setea en estilo inline. */
+.muni-stats {
+  --muni-accent: #1e3a5f;
+  --muni-accent-soft: #475569;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.muni-bignum {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--muni-accent);
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+.muni-label {
+  font-size: 0.78rem;
+  color: var(--muni-accent-soft);
+  margin-top: 2px;
+}
+.muni-side {
+  font-size: 0.82rem;
+  color: #444;
+  text-align: right;
+  line-height: 1.5;
+}
+.muni-delta {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--muni-accent);
+  font-weight: 600;
+}
+@media (max-width: 600px) {
+  .muni-side {
+    text-align: left;
+  }
+}
+
+/* Pirámide */
+.piramide-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+}
+
+.piramide-head strong {
+  font-size: 1rem;
+  color: #1e3a5f;
+}
+
+.piramide-total {
+  color: #555;
+  font-size: 0.8rem;
+}
+
+.piramide-leg {
+  display: flex;
+  gap: 10px;
+  font-size: 0.75rem;
+  color: #444;
+}
+
+.piramide-leg-item,
+.serie-leg-item,
+.serie-hover-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.piramide-warn {
+  margin: 4px 0 6px;
+  padding: 4px 8px;
+  background: #fff3cd;
+  color: #856404;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.piramide-compare {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 6px 0 2px;
+  font-size: 0.78rem;
+  color: #555;
+}
+
+.piramide-compare select {
+  margin-left: 4px;
+}
+
+.piramide-ghost-leg {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #555;
+  font-size: 0.75rem;
+}
+
+.piramide-delta {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.piramide-svg,
+.serie-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-top: 4px;
+}
+
+.piramide-hover,
+.serie-hover {
+  margin-top: 6px;
+  padding: 6px 8px;
+  background: #f5f7fa;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  color: #333;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.piramide-hint {
+  color: #888;
+  font-style: italic;
+}
+
+/* Serie histórica */
+.serie-leg {
+  display: flex;
+  gap: 12px;
+  font-size: 0.75rem;
+  color: #444;
+}
+
+@media (max-width: 600px) {
+  .demografia-panel {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: 70%;
+    border-left: none;
+    border-top: 1px solid #e0e0e0;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.12);
+  }
+  .demografia-panel.full {
+    top: 0;
+    height: auto;
+    border-radius: 0;
+  }
+  .demografia-body.full {
+    grid-template-columns: 1fr;
+    padding: 12px;
+    gap: 12px;
+  }
+}
+
+/* ── Loading / Error states ────────────────────────────── */
+
+.status-bar {
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.status-bar.loading {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-bar.error {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Stage layout (rediseño UI: el mapa es el producto)
+   El stage es el contenedor que sustituye a la zona superior
+   de checkboxes/leyendas. Los controles flotan sobre el mapa
+   en posición absoluta.
+   ────────────────────────────────────────────────────────── */
+
+.stage {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.stage-top-left {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  max-width: calc(100% - 76px);
+  z-index: 800;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+}
+.stage-top-left > * {
+  pointer-events: auto;
+}
+
+/* El year-slider en modo stage-bottom: flota sobre el mapa en lugar de
+   ocupar fila en el flujo. Anula el border-bottom del estilo base. */
+.year-slider.stage-bottom {
+  position: absolute;
+  bottom: 16px;
+  left: 12px;
+  right: 12px;
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+  background: #ffffffee;
+  border: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0; /* explicit reset */
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  padding: 8px 14px;
+  z-index: 800;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ── MapMode (píldora top-left + dropdown) ─────────────── */
+
+.mapmode {
+  display: inline-block;
+}
+
+.mapmode-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: #1a1a1a;
+}
+.mapmode-pill:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.mapmode-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.mapmode-text {
+  display: inline-flex;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.mapmode-summary {
+  font-weight: 600;
+}
+
+.mapmode-sep {
+  color: #cbd5e1;
+}
+
+.mapmode-metric {
+  color: #555;
+}
+
+.mapmode-caret {
+  font-size: 0.7rem;
+  color: #888;
+  margin-left: 2px;
+}
+
+.mapmode-strip {
+  display: flex;
+  margin: 6px 12px 0;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+.mapmode-strip-cell {
+  flex: 1;
+}
+
+.mapmode-panel {
+  margin-top: 6px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  padding: 12px 14px;
+  width: 280px;
+  max-width: calc(100vw - 32px);
+}
+
+.mapmode-section + .mapmode-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.mapmode-section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+.mapmode-section-year {
+  color: #1e3a5f;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.mapmode-options {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mapmode-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.mapmode-option:hover {
+  background: #f5f7fa;
+}
+.mapmode-option.is-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.mapmode-option input[type="radio"] {
+  accent-color: #1e3a5f;
+}
+
+.mapmode-option-text {
+  flex: 1;
+  font-size: 0.85rem;
+}
+.mapmode-option-hint {
+  color: #888;
+  font-size: 0.75rem;
+}
+
+.mapmode-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  font-size: 0.75rem;
+  color: #555;
+}
+.mapmode-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.mapmode-legend-box {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+.mapmode-footnote {
+  margin-top: 8px;
+  font-size: 0.7rem;
+  color: #6b7280;
+  font-style: italic;
+  line-height: 1.3;
+}
+
+/* ── ActiveOverlaysStrip (chips bajo la píldora) ──────── */
+
+.overlays-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.overlays-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: #ffffffe6;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.75rem;
+  color: #475569;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.overlays-chip:hover {
+  background: #fff;
+  border-color: #cbd5e1;
+  color: #1a1a1a;
+}
+.overlays-chip-icon {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+.overlays-chip-label {
+  font-weight: 500;
+}
+.overlays-chip-x {
+  color: #94a3b8;
+  font-weight: 700;
+  line-height: 1;
+  margin-left: 2px;
+}
+.overlays-chip-add {
+  padding: 4px 10px;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+/* ── LayersPanel (FAB + drawer) ────────────────────────── */
+
+.lp-fab {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 810;
+  color: #1a1a1a;
+}
+.lp-fab:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+.lp-fab.is-open {
+  background: #1e3a5f;
+  border-color: #1e3a5f;
+  color: #fff;
+}
+.lp-fab-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+.lp-fab-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #1e3a5f;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+}
+
+.lp-drawer {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 320px;
+  max-width: calc(100% - 24px);
+  max-height: calc(100% - 24px);
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.2);
+  z-index: 820;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.lp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+}
+.lp-header strong {
+  font-size: 0.95rem;
+}
+.lp-close {
+  border: none;
+  background: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #888;
+  padding: 0 4px;
+}
+
+.lp-body {
+  padding: 4px 6px 10px;
+  overflow-y: auto;
+}
+
+.lp-section {
+  padding: 6px 6px 4px;
+}
+.lp-section + .lp-section {
+  border-top: 1px solid #f3f4f6;
+}
+
+.lp-section-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 6px 4px 2px;
+}
+
+.lp-sub {
+  margin-left: 12px;
+  border-left: 2px solid #e5e7eb;
+  padding-left: 6px;
+  margin-top: 2px;
+}
+
+.lp-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  min-height: 44px;
+}
+.lp-switch:hover {
+  background: #f8fafc;
+}
+.lp-switch.is-indent {
+  font-size: 0.85rem;
+  min-height: 38px;
+  padding: 6px 8px;
+}
+.lp-switch-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  font-size: 0.88rem;
+}
+.lp-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.lp-icon {
+  font-size: 0.95rem;
+}
+
+.lp-toggle {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.lp-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+}
+.lp-toggle-track {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #d1d5db;
+  border-radius: 999px;
+  transition: background 0.15s ease;
+  position: relative;
+}
+.lp-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: left 0.15s ease;
+}
+.lp-toggle.is-on .lp-toggle-track {
+  background: #1e3a5f;
+}
+.lp-toggle.is-on .lp-toggle-thumb {
+  left: 18px;
+}
+
+/* ── Móvil ≤600px ─────────────────────────────────────── */
+@media (max-width: 600px) {
+  .stage-top-left {
+    top: 8px;
+    left: 8px;
+    max-width: calc(100% - 66px);
+  }
+  .mapmode-pill {
+    padding: 7px 12px;
+    font-size: 0.82rem;
+  }
+  .lp-fab {
+    top: 8px;
+    right: 8px;
+  }
+  .year-slider.stage-bottom {
+    left: 8px;
+    right: 8px;
+    bottom: 12px;
+  }
+  /* Drawer pasa a bottom-sheet */
+  .lp-drawer {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: auto;
+    max-width: 100%;
+    max-height: 80%;
+    border-radius: 16px 16px 0 0;
+    border: none;
+    border-top: 1px solid #e0e0e0;
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.18);
+  }
+}
