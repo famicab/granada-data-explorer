@@ -33,14 +33,6 @@ Además:
 - **Panel "Ciudad"** — agregados municipales: pirámide de población, serie histórica de
   habitantes 1996-2025, renta IRPF y evolución de la vivienda turística.
 
-## ¿Para quién es?
-
-Para **estudiantes, profesorado y cualquier persona interesada en los datos de su ciudad**.
-No hace falta saber programar para usarlo. Y como proyecto educativo tiene una virtud
-deliberada: **es honesto sobre los límites de sus datos** (sesgos, huecos, estimaciones).
-Esa transparencia —documentada métrica a métrica— lo hace útil para aprender *alfabetización
-de datos*, no solo para mirar mapas bonitos.
-
 ---
 
 ## Pruébalo
