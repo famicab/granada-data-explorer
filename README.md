@@ -5,12 +5,13 @@ Explora en un mapa cómo se reparten la población, la renta, la calidad del air
 urbano y la vivienda turística —barrio a barrio y año a año— desde fuentes oficiales (INE,
 Junta de Andalucía, AEAT y OpenStreetMap).
 
+[![Demo en vivo](https://img.shields.io/badge/demo-en%20vivo-orange.svg)](https://granada-data-explorer.pages.dev)
 [![Código: MIT](https://img.shields.io/badge/c%C3%B3digo-MIT-blue.svg)](LICENSE)
 [![Datos: varias licencias](https://img.shields.io/badge/datos-INE%20%C2%B7%20Junta%20%C2%B7%20AEAT%20%C2%B7%20OSM-green.svg)](DATA_LICENSE.md)
 
-![Granada Data Explorer — mapa de coropletas por sección censal con panel de indicadores](docs/img/screenshot.png)
+[![Granada Data Explorer — mapa de coropletas por sección censal con panel de indicadores](docs/img/screenshot.png)](https://granada-data-explorer.pages.dev)
 
-> 🔗 **Demo en vivo:** _(próximamente)_
+> 🔗 **Demo en vivo:** **<https://granada-data-explorer.pages.dev>**
 
 ---
 
@@ -39,7 +40,7 @@ Además:
 
 ### En tu navegador
 
-La demo en vivo estará disponible próximamente. _(Cuando se despliegue, el enlace irá arriba.)_
+👉 **[Abre la demo en vivo](https://granada-data-explorer.pages.dev)** — no necesitas instalar nada.
 
 ### En local (para desarrolladores)
 
