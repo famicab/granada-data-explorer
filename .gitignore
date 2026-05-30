@@ -15,7 +15,8 @@ __pycache__/
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
-frontend/public/api/   # datos estáticos generados por copy-data.mjs (prebuild)
+# datos estáticos generados por copy-data.mjs (prebuild); se regeneran en cada build
+frontend/public/api/
 npm-debug.log*
 
 # ─── Datos crudos pesados (reproducibles con scripts/build_*.py) ──
