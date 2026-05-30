@@ -22,9 +22,10 @@ npm-debug.log*
 raw-data/
 *.pbf
 
-# ─── Documentación y notas internas (no se publican) ──────
-# La atribución de fuentes, metodología y métricas viven en README.md.
-docs/
+# ─── Notas internas (no se publican) ──────────────────────
+# La metodología pública vive en docs/DATA_SOURCES.md y docs/METRICS.md.
+# El informe de auditoría es interno; plans/ y prompts/ también.
+docs/OPEN_SOURCE_READINESS.md
 plans/
 prompts/
 
