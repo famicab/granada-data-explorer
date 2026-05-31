@@ -496,7 +496,7 @@ export default function GranadaMap({
       zoomControl={false}
     >
       <TileLayer
-        attribution='Mapa base y datos &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors (ODbL) · Datos: INE, Junta de Andalucía, AEAT'
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <VerdePane />
