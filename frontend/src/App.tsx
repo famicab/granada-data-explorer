@@ -464,21 +464,80 @@ export default function App() {
     };
   }, [selectedYear, activeAreaLayer?.data, estacionesNo2]);
 
-  // Total municipal del año seleccionado (suma sobre la capa activa).
-  let totalPob: number | null = null;
+  // Resumen de ciudad para el slider, contextual a la métrica activa: total o
+  // agregado del año (suma sobre la capa activa; renta usa la mediana municipal
+  // oficial). Las métricas sin "total" con sentido (ninguna ahora) quedarían en
+  // null y el slider no mostraría resumen.
+  let slatText: string | null = null;
+  const slatPopNote =
+    activeMetric === "pop" && selectedYear != null && selectedYear < 2021;
   if (selectedYear != null && activeAreaLayer?.data) {
-    let sum = 0;
-    let any = false;
-    for (const f of activeAreaLayer.data.features) {
-      const v = (f.properties as Record<string, any> | null)?.poblaciones?.[
-        String(selectedYear)
-      ];
-      if (typeof v === "number") {
-        sum += v;
-        any = true;
+    const feats = activeAreaLayer.data.features;
+    const y = String(selectedYear);
+    const numOf = (v: any) => (typeof v === "number" ? v : 0);
+
+    if (activeMetric === "pop") {
+      let sum = 0;
+      let any = false;
+      for (const f of feats) {
+        const v = (f.properties as any)?.poblaciones?.[y];
+        if (typeof v === "number") {
+          sum += v;
+          any = true;
+        }
       }
+      if (any) slatText = `Pob. total: ${sum.toLocaleString("es-ES")} hab.`;
+    } else if (activeMetric === "vft_ratio") {
+      let sum = 0;
+      let any = false;
+      for (const f of feats) {
+        const v = (f.properties as any)?.vft?.serie?.[y];
+        if (typeof v === "number") {
+          sum += v;
+          any = true;
+        }
+      }
+      if (any) slatText = `VFT totales: ${sum.toLocaleString("es-ES")}`;
+    } else if (activeMetric === "verde_hab") {
+      let g = 0;
+      let p = 0;
+      for (const f of feats) {
+        const pr = f.properties as any;
+        g += numOf(pr?.superficie_verde_m2);
+        p += numOf(pr?.poblaciones?.[y]);
+      }
+      if (p > 0) slatText = `Media ciudad: ${(g / p).toFixed(1)} m²/hab`;
+    } else if (activeMetric === "renta") {
+      const ra = demoData?.renta_adrh;
+      if (ra && ra.anios.length) {
+        const idx = ra.anios.indexOf(selectedYear);
+        const useIdx = idx >= 0 ? idx : ra.med_uc.length - 1;
+        const val = ra.med_uc[useIdx];
+        if (typeof val === "number") {
+          const suffix = idx >= 0 ? "" : ` (${ra.anios[useIdx]})`;
+          slatText = `Mediana ciudad: ${val.toLocaleString("es-ES")} €/UC${suffix}`;
+        }
+      }
+    } else if (activeMetric === "no2_exposure") {
+      let wsum = 0;
+      let den = 0;
+      for (const f of feats) {
+        const pr = f.properties as any;
+        const pob = numOf(pr?.poblaciones?.[y]);
+        let no2: number | undefined;
+        const direct = pr?.no2_serie?.[y];
+        if (typeof direct === "number") no2 = direct;
+        else {
+          const st = pr?.estacion_cercana?.name;
+          if (st && estacionesNo2) no2 = estacionesNo2[st]?.[y];
+        }
+        if (pob && typeof no2 === "number") {
+          wsum += pob * no2;
+          den += pob;
+        }
+      }
+      if (den > 0) slatText = `NO₂ medio: ${(wsum / den).toFixed(1)} µg/m³`;
     }
-    totalPob = any ? sum : null;
   }
 
   // Capas del grupo "Zonas verdes" — el maestro controla el panel y enciende/
@@ -728,10 +787,10 @@ export default function App() {
               />
               <span>{anios[anios.length - 1]}</span>
               <strong>{selectedYear}</strong>
-              {totalPob != null && (
+              {slatText != null && (
                 <span className="year-total">
-                  Pob. total: {totalPob.toLocaleString("es-ES")}
-                  {selectedYear < 2021 && (
+                  {slatText}
+                  {slatPopNote && (
                     /* ADRH (2015-2020) cuenta solo residentes en hogar
                        identificado; sub-estima el Padrón en ~3-5 %. CAP
                        (2021+) usa la metodología registral oficial y
