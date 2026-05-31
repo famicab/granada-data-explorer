@@ -364,7 +364,25 @@ body {
   font-size: 0.82rem;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+}
+
+/* Cada categoría (Renta, Zonas verdes, Calidad del aire) es un grupo con
+   título; los grupos se separan con un divisor para que se lean como bloques
+   independientes (mismo patrón que el bloque de Vivienda turística). */
+.sp-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.sp-group + .sp-group {
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid #eee;
+}
+.sp-group-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 2px;
 }
 
 .sp-label {

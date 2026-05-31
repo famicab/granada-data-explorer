@@ -441,59 +441,78 @@ export default function AreaPanel({
         rentaHasAny ||
         (esBarrio ? area.estacion_principal : area.estacion_cercana)) && (
         <div className="sp-indicators">
-          {rentaRows.map(({ info, r }) => (
-            <div key={info.key} title={info.tip}>
-              <span className="sp-label">{info.full}:</span>{" "}
-              <strong>
-                {r!.value.toLocaleString("es-ES")} {info.unit}
-              </strong>{" "}
-              <span className="sp-sub">({r!.yr})</span>
-            </div>
-          ))}
-          {verde != null && (
-            <div>
-              <span className="sp-label">
-                Zonas verdes {esBarrio ? "en el barrio" : "en la sección"}:
-              </span>{" "}
-              <strong>{fmtArea(verde)}</strong>
-            </div>
-          )}
-          {desglose && verde != null && verde > 0 && (
-            <DesgloseVerde desglose={desglose} total={verde} />
-          )}
-          {ratio != null && (
-            <div>
-              <span className="sp-label">Verde por habitante:</span>{" "}
-              <strong style={{ color: ratioColor(ratio) }}>
-                {ratio.toFixed(1)} m²/hab
-              </strong>{" "}
-              <span className="sp-sub">
-                ({ratio >= OMS_VERDE_HAB ? "≥" : "<"} OMS {OMS_VERDE_HAB})
-              </span>
-            </div>
-          )}
-          {esBarrio && area.estacion_principal && (
-            <div>
-              <span className="sp-label">Estación de aire principal:</span>{" "}
-              <strong>{area.estacion_principal}</strong>
-              {no2Actual != null && (
-                <>
-                  {" · "}
-                  <strong style={{ color: ratioColorNo2(no2Actual) }}>
-                    NO₂ {no2Actual.toFixed(1)} µg/m³
+          {rentaHasAny && (
+            <div className="sp-group">
+              <div className="sp-group-title" style={{ color: "#b30000" }}>
+                💶 Renta
+              </div>
+              {rentaRows.map(({ info, r }) => (
+                <div key={info.key} title={info.tip}>
+                  <span className="sp-label">{info.short}:</span>{" "}
+                  <strong>
+                    {r!.value.toLocaleString("es-ES")} {info.unit}
                   </strong>{" "}
-                  <span className="sp-sub">({year})</span>
-                </>
+                  <span className="sp-sub">({r!.yr})</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {(verde != null || ratio != null) && (
+            <div className="sp-group">
+              <div className="sp-group-title" style={{ color: "#166534" }}>
+                🌳 Zonas verdes
+              </div>
+              {verde != null && (
+                <div>
+                  <span className="sp-label">Superficie:</span>{" "}
+                  <strong>{fmtArea(verde)}</strong>
+                </div>
+              )}
+              {desglose && verde != null && verde > 0 && (
+                <DesgloseVerde desglose={desglose} total={verde} />
+              )}
+              {ratio != null && (
+                <div>
+                  <span className="sp-label">Por habitante:</span>{" "}
+                  <strong style={{ color: ratioColor(ratio) }}>
+                    {ratio.toFixed(1)} m²/hab
+                  </strong>{" "}
+                  <span className="sp-sub">
+                    ({ratio >= OMS_VERDE_HAB ? "≥" : "<"} OMS {OMS_VERDE_HAB})
+                  </span>
+                </div>
               )}
             </div>
           )}
-          {!esBarrio && area.estacion_cercana && (
-            <div>
-              <span className="sp-label">Estación de aire más cercana:</span>{" "}
-              <strong>{area.estacion_cercana.name}</strong>{" "}
-              <span className="sp-sub">
-                ({fmtDist(area.estacion_cercana.distancia_m)})
-              </span>
+          {(esBarrio ? area.estacion_principal : area.estacion_cercana) && (
+            <div className="sp-group">
+              <div className="sp-group-title" style={{ color: "#b45309" }}>
+                🌫️ Calidad del aire
+              </div>
+              {esBarrio && area.estacion_principal && (
+                <div>
+                  <span className="sp-label">Estación principal:</span>{" "}
+                  <strong>{area.estacion_principal}</strong>
+                  {no2Actual != null && (
+                    <>
+                      {" · "}
+                      <strong style={{ color: ratioColorNo2(no2Actual) }}>
+                        NO₂ {no2Actual.toFixed(1)} µg/m³
+                      </strong>{" "}
+                      <span className="sp-sub">({year})</span>
+                    </>
+                  )}
+                </div>
+              )}
+              {!esBarrio && area.estacion_cercana && (
+                <div>
+                  <span className="sp-label">Estación más cercana:</span>{" "}
+                  <strong>{area.estacion_cercana.name}</strong>{" "}
+                  <span className="sp-sub">
+                    ({fmtDist(area.estacion_cercana.distancia_m)})
+                  </span>
+                </div>
+              )}
             </div>
           )}
         </div>
