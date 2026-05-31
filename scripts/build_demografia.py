@@ -214,6 +214,54 @@ def build_renta_municipal() -> dict | None:
     }
 
 
+RENTA_ADRH_URL = "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/31025.csv"
+RENTA_ADRH_INDICADORES = {
+    "med_uc": "Mediana de la renta por unidad de consumo",
+    "hogar": "Renta neta media por hogar",
+    "persona": "Renta neta media por persona",
+}
+
+
+def build_renta_adrh() -> dict | None:
+    """Serie municipal (Granada 18087) de la renta ADRH, 3 variantes
+    (mediana por unidad de consumo / media por hogar / media por persona),
+    2015-2023. Misma operación que el mapa pero a nivel ciudad: la fila de
+    municipio de la tabla 31025. None si no hay red ni cache."""
+    try:
+        from _ine_cache import open_csv  # cache local en raw-data/ine_cache/
+        reader = open_csv(RENTA_ADRH_URL)
+    except Exception as e:
+        print(f"[WARN] renta ADRH municipal no disponible ({e})")
+        return None
+    next(reader, None)
+    by_name = {v: k for k, v in RENTA_ADRH_INDICADORES.items()}
+    series: dict[str, dict[int, int]] = {k: {} for k in RENTA_ADRH_INDICADORES}
+    for row in reader:
+        if len(row) < 6:
+            continue
+        muni, dist, sec, ind, per, tot = row[:6]
+        # Solo la fila de municipio: distrito y sección vacíos.
+        if not muni.startswith("18087") or dist.strip() or sec.strip():
+            continue
+        key = by_name.get(ind.strip())
+        if key is None:
+            continue
+        try:
+            series[key][int(per)] = int(tot.strip().replace(".", ""))
+        except ValueError:
+            continue
+    anios = sorted({y for s in series.values() for y in s})
+    if not anios:
+        return None
+    return {
+        "anios": anios,
+        "med_uc": [series["med_uc"].get(y) for y in anios],
+        "hogar": [series["hogar"].get(y) for y in anios],
+        "persona": [series["persona"].get(y) for y in anios],
+        "fuente": "INE · ADRH tabla 31025 (Granada, nivel municipio)",
+    }
+
+
 def main() -> None:
     if not SERIE_CSV.exists():
         raise SystemExit(f"Falta: {SERIE_CSV}")
@@ -228,6 +276,9 @@ def main() -> None:
     renta = build_renta_municipal()
     if renta:
         data["renta_municipal"] = renta
+    renta_adrh = build_renta_adrh()
+    if renta_adrh:
+        data["renta_adrh"] = renta_adrh
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")

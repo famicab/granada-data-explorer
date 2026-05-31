@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { RENTA_VARIANTS } from "../renta.ts";
 
 // ── Tipos ────────────────────────────────────────────────────────────────
 // AreaProps cubre los dos shapes posibles: secciones censales (CUSEC, CDIS,
@@ -29,6 +30,9 @@ export interface SeccionProps {
   centroide?: [number, number];
   equipamientos?: Record<string, EquipEntrySeccion>;
   renta?: Record<string, number>;
+  renta_med_uc?: Record<string, number>;
+  renta_hogar?: Record<string, number>;
+  renta_persona?: Record<string, number>;
   vft?: VftBlock;
 }
 
@@ -44,6 +48,9 @@ export interface BarrioProps {
   centroide?: [number, number];
   equipamientos?: Record<string, EquipEntryBarrio>;
   renta?: Record<string, number>;
+  renta_med_uc?: Record<string, number>;
+  renta_hogar?: Record<string, number>;
+  renta_persona?: Record<string, number>;
   vft?: VftBlock;
 }
 
@@ -363,25 +370,23 @@ export default function AreaPanel({
   const ratio =
     verde != null && actual != null && actual > 0 ? verde / actual : null;
 
-  // Renta neta media: muestra el valor del año del slider si está en el
-  // rango ADRH (2015-2023). Si el slider está en 2024/2025 cae al último
-  // año disponible, indicando ese año entre paréntesis.
-  const rentaSerie = area.renta;
-  const rentaHasAny = rentaSerie && Object.keys(rentaSerie).length > 0;
-  let rentaValue: number | undefined;
-  let rentaYear: number | undefined;
-  if (rentaSerie && year != null && rentaSerie[String(year)] != null) {
-    rentaValue = rentaSerie[String(year)];
-    rentaYear = year;
-  } else if (rentaSerie) {
-    const yrs = Object.keys(rentaSerie)
+  // Renta (3 variantes ADRH 2015-2023): para cada una, el valor del año del
+  // slider; si está fuera del rango (2024/2025) cae al último disponible.
+  const pickRenta = (serie?: Record<string, number>) => {
+    if (!serie) return undefined;
+    if (year != null && serie[String(year)] != null) {
+      return { value: serie[String(year)], yr: year };
+    }
+    const yrs = Object.keys(serie)
       .map(Number)
       .sort((a, b) => b - a);
-    if (yrs.length > 0) {
-      rentaYear = yrs[0];
-      rentaValue = rentaSerie[String(yrs[0])];
-    }
-  }
+    return yrs.length > 0 ? { value: serie[String(yrs[0])], yr: yrs[0] } : undefined;
+  };
+  const rentaRows = RENTA_VARIANTS.map((v) => ({
+    info: v,
+    r: pickRenta((area as Record<string, any>)[v.key]),
+  })).filter((row) => row.r);
+  const rentaHasAny = rentaRows.length > 0;
 
   return (
     <div className="detail-panel">
@@ -436,15 +441,15 @@ export default function AreaPanel({
         rentaHasAny ||
         (esBarrio ? area.estacion_principal : area.estacion_cercana)) && (
         <div className="sp-indicators">
-          {rentaValue != null && rentaYear != null && (
-            <div>
-              <span className="sp-label">Renta neta media:</span>{" "}
+          {rentaRows.map(({ info, r }) => (
+            <div key={info.key} title={info.tip}>
+              <span className="sp-label">{info.full}:</span>{" "}
               <strong>
-                {rentaValue.toLocaleString("es-ES")} €/persona
+                {r!.value.toLocaleString("es-ES")} {info.unit}
               </strong>{" "}
-              <span className="sp-sub">({rentaYear})</span>
+              <span className="sp-sub">({r!.yr})</span>
             </div>
-          )}
+          ))}
           {verde != null && (
             <div>
               <span className="sp-label">

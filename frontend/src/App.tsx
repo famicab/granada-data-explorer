@@ -58,6 +58,13 @@ interface AreaMeta {
   renta_breaks?: number[];
   renta_colors?: string[];
   renta_anios?: number[];
+  // Variantes de renta (mediana UC / por hogar / por persona).
+  renta_med_uc_breaks?: number[];
+  renta_med_uc_colors?: string[];
+  renta_hogar_breaks?: number[];
+  renta_hogar_colors?: string[];
+  renta_persona_breaks?: number[];
+  renta_persona_colors?: string[];
   vft_breaks?: number[];
   vft_colors?: string[];
   vft_fecha_descarga?: string;
@@ -227,8 +234,11 @@ export default function App() {
   const vhColors = areaMeta?.verde_hab_colors;
   const no2Breaks = areaMeta?.no2_breaks;
   const no2Colors = areaMeta?.no2_colors;
-  const rentaBreaks = areaMeta?.renta_breaks;
-  const rentaColors = areaMeta?.renta_colors;
+  // El mapa muestra siempre la mediana por unidad de consumo (métrica robusta).
+  // Las otras variantes (hogar/persona) se ven en la ficha de sección y en la
+  // gráfica del panel "Ciudad".
+  const rentaBreaks = areaMeta?.renta_med_uc_breaks;
+  const rentaColors = areaMeta?.renta_med_uc_colors;
   const rentaAnios = areaMeta?.renta_anios;
   const vftBreaks = areaMeta?.vft_breaks;
   const vftColors = areaMeta?.vft_colors;
@@ -288,7 +298,7 @@ export default function App() {
       : activeMetric === "no2_exposure"
       ? "Exposición NO₂ (µg/m³)"
       : activeMetric === "renta"
-      ? "Renta neta media (€/persona)"
+      ? "Renta mediana (€/UC)"
       : activeMetric === "vft_ratio"
       ? "VFTs por 100 viviendas (%)"
       : "Habitantes por sección";
@@ -639,6 +649,7 @@ export default function App() {
               onSelectArea={showArea}
               year={selectedYear}
               metric={activeMetric}
+              rentaKey="renta_med_uc"
               flyTarget={flyTarget}
             />
 

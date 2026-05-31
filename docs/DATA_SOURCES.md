@@ -7,7 +7,7 @@ Inventario de todos los datasets de los que se alimenta el proyecto, en el orden
 | ID | Fuente | Organismo | Ámbito |
 |---|---|---|---|
 | F1 | OpenRTA | Junta de Andalucía (Consejería de Turismo) | VFTs en Granada |
-| F2 | ADRH tabla 31025 | INE | Renta neta media por sección |
+| F2 | ADRH tabla 31025 | INE | Renta por sección y municipio (mediana UC · hogar · persona) |
 | F3 | ADRH tabla 31033 | INE | Población + tamaño hogar por sección |
 | F4 | CAP tabla 69178 | INE | Población por sección 2021-25 |
 | F5 | Padrón continuo tabla 33794 | INE | Pirámide quinquenal municipal |
@@ -58,28 +58,39 @@ Inventario de todos los datasets de los que se alimenta el proyecto, en el orden
 
 **URL de origen:** `https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/31025.csv`
 
-**Fecha de descarga:** en cada ejecución del pipeline (re-descarga). No hay cache.
+**Fecha de descarga:** en cada ejecución del pipeline; **cacheada** en `raw-data/ine_cache/31025.csv` (re-uso entre ejecuciones; `INE_CACHE_REFRESH=1` fuerza re-descarga).
 
 **Cobertura temporal:** 2015-2023 (9 años) — última actualización ADRH publicada por el INE.
 
-**Cobertura geográfica:** provincia de Granada por defecto en esta tabla; filtrado en pipeline a municipio `18087` (Granada capital), a nivel sección censal.
+**Cobertura geográfica:** provincia de Granada por defecto en esta tabla; filtrado en pipeline a municipio `18087` (Granada capital). Se usan **dos niveles**: sección censal (mapa/ficha) y municipio (panel "Ciudad").
 
-**Formato original:** CSV `;` separado, encoding UTF-8 con BOM, separador de miles `.`.
+**Formato original:** CSV `;` separado, encoding UTF-8 con BOM, separador de miles `.`. La tabla se llama *"Indicadores de renta media y mediana"* y contiene **varios indicadores** por fila.
+
+**Indicadores utilizados (3 de los 6 disponibles):**
+| Indicador en la tabla | Clave embebida | Uso en la UI |
+|---|---|---|
+| Mediana de la renta por unidad de consumo | `renta_med_uc` | **Titular del coropleta** (robusto, estándar Eurostat) |
+| Renta neta media por hogar | `renta_hogar` | Ficha de sección + gráfica "Ciudad" |
+| Renta neta media por persona | `renta_persona` | Ficha de sección + gráfica "Ciudad" (per cápita, histórico) |
 
 **Transformaciones aplicadas:**
-1. Descarga + parseo línea a línea.
-2. Filtro `Municipios.startswith("18087")` y `Indicadores == "Renta neta media por persona"`.
-3. Parsing de valor (`"10.933"` → `10933`).
-4. Estructuración como `{CUSEC: {año: valor}}`.
+1. Descarga + parseo línea a línea (cache local).
+2. Filtro `Municipios.startswith("18087")` y selección de los 3 indicadores anteriores.
+3. Parsing de valor (`"20.650"` → `20650`).
+4. **Nivel sección** (`build_renta.py`): `{CUSEC: {año: valor}}` por indicador, embebido en `secciones_censales.geojson`; cuantiles pooled **por variante** (`<clave>_breaks`/`_colors`). El alias `renta` apunta a `renta_med_uc`.
+5. **Nivel municipio** (`build_demografia.py`): la **fila de municipio** de la misma tabla (Distritos y Secciones vacíos) se vuelca como serie temporal de las 3 variantes en `demografia.json` → bloque `renta_adrh` (gráfica del panel "Ciudad").
 
-**Campos utilizados:** `Municipios`, `Distritos`, `Secciones`, `Indicadores`, `Periodo`, `Total`.
+**Campos utilizados:** `Municipios`, `Distritos`, `Secciones`, `Indicadores de renta media y mediana`, `Periodo`, `Total`.
 
 **Limitaciones:**
 - Última publicación oficial: 2023. Para años 2024-2025 (visibles en el slider) el panel cae al valor más reciente disponible.
 - El ADRH es una estadística experimental basada en cruce de Padrón × IRPF — los valores difieren ligeramente de la "renta declarada IRPF" (F6), que es contable.
+- **La mediana no es agregable:** a nivel barrio se aproxima por media ponderada de las medianas de sección (advertido en la UI); a nivel municipio se usa la **mediana oficial del INE** (≠ mediana de las secciones: 19.950 € vs 20.650 € en 2023).
+- "Renta por **unidad de consumo**" aplica la escala de equivalencia (OCDE-modificada); no es comparable directamente con "por persona" (per cápita) ni "por hogar".
+- La mediana UC se publica en **escalones gruesos** (múltiplos de ~50 €), lo que produce tramos planos inter-anuales (no es un error).
 - Cambios de delimitación de secciones censales del INE en algún año podrían dejar secciones sin pareo (no hay reconciliación implementada).
 
-**Pipeline:** [scripts/build_renta.py](../scripts/build_renta.py)
+**Pipeline:** [scripts/build_renta.py](../scripts/build_renta.py) (sección/barrio) + [scripts/build_demografia.py](../scripts/build_demografia.py) (serie municipal `renta_adrh`)
 
 ---
 
@@ -290,7 +301,7 @@ Inventario de todos los datasets de los que se alimenta el proyecto, en el orden
 **Transformaciones aplicadas:**
 1. Reproyección a EPSG:4326 (WGS84) para Leaflet.
 2. Selección de columnas: `CUSEC`, `CDIS`, `CSEC`, `NMUN`.
-3. Patch progresivo del feature collection con bloques `poblaciones`, `superficie_verde_*`, `estacion_cercana`, `equipamientos`, `renta`, `vft` por sucesivos build_*.
+3. Patch progresivo del feature collection con bloques `poblaciones`, `superficie_verde_*`, `estacion_cercana`, `equipamientos`, `renta_med_uc`/`renta_hogar`/`renta_persona`, `vft` por sucesivos build_*.
 
 **Campos utilizados:** `CUSEC` (10 dígitos: provincia 2 + municipio 3 + distrito 2 + sección 3), `CDIS`, `CSEC`, `NMUN`.
 

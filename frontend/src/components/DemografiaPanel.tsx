@@ -4,6 +4,7 @@ import SerieHistorica, { type SerieData } from "./SerieHistorica.tsx";
 import RentaMunicipalChart, {
   type RentaMunicipalData,
 } from "./RentaMunicipalChart.tsx";
+import RentaAdrhChart, { type RentaAdrhData } from "./RentaAdrhChart.tsx";
 import VftMunicipalChart, {
   type VftMunicipalData,
 } from "./VftMunicipalChart.tsx";
@@ -13,6 +14,7 @@ export interface DemografiaData {
   serie: SerieData;
   piramide: PiramideData;
   renta_municipal?: RentaMunicipalData;
+  renta_adrh?: RentaAdrhData;
   vft_municipal?: VftMunicipalData;
 }
 
@@ -71,6 +73,17 @@ export default function DemografiaPanel({
       <RentaMunicipalChart data={data.renta_municipal} year={year} />
     </section>
   );
+  // Renta por sección (ADRH) agregada a ciudad — 3 variantes. Distinta de la
+  // de AEAT (por declarante): se muestran juntas en la pestaña Renta.
+  const rentaSeccionEl = data?.renta_adrh && (
+    <section className="demo-card demo-card-wide">
+      <h3 className="demo-card-title">
+        Renta por sección (ADRH) · {data.renta_adrh.anios[0]}–
+        {data.renta_adrh.anios[data.renta_adrh.anios.length - 1]}
+      </h3>
+      <RentaAdrhChart data={data.renta_adrh} year={year} />
+    </section>
+  );
   const turismoEl = data?.vft_municipal && (
     <section className="demo-card demo-card-wide">
       <h3 className="demo-card-title">
@@ -107,12 +120,12 @@ export default function DemografiaPanel({
           >
             Serie histórica
           </button>
-          {data?.renta_municipal && (
+          {(data?.renta_adrh || data?.renta_municipal) && (
             <button
               className={`rp-tab ${tab === "renta" ? "active" : ""}`}
               onClick={() => setTab("renta")}
             >
-              Renta IRPF
+              Renta
             </button>
           )}
           {data?.vft_municipal && (
@@ -134,13 +147,19 @@ export default function DemografiaPanel({
           <>
             {piramideEl}
             {serieEl}
+            {rentaSeccionEl}
             {rentaEl}
             {turismoEl}
           </>
         )}
         {!loading && data && !full && tab === "piramide" && piramideEl}
         {!loading && data && !full && tab === "serie" && serieEl}
-        {!loading && data && !full && tab === "renta" && rentaEl}
+        {!loading && data && !full && tab === "renta" && (
+          <>
+            {rentaSeccionEl}
+            {rentaEl}
+          </>
+        )}
         {!loading && data && !full && tab === "turismo" && turismoEl}
       </div>
     </aside>

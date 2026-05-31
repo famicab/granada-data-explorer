@@ -94,30 +94,45 @@ Las métricas se agrupan por panel de origen:
 
 ---
 
-### M4 · Renta neta media por persona
+### M4 · Renta (mediana por unidad de consumo)
 
-**Objetivo:** comparar la renta media disponible entre secciones / barrios.
+**Objetivo:** comparar la renta entre secciones / barrios con una medida robusta.
 
 **Datos de entrada:** F2 (ADRH 31025) + F8 (secciones).
 
-**Fórmula:** valor directo (`renta[año]`) en € por persona del ADRH.
+**Fórmula:** valor directo del indicador del ADRH. El **coropleta usa la mediana
+por unidad de consumo** (`renta_med_uc`); la ficha de sección muestra además las
+otras dos variantes embebidas (`renta_hogar`, `renta_persona`).
 
 **Pasos de cálculo (build_renta.py):**
-1. Descargar ADRH 31025.
-2. Filtrar `Indicadores == "Renta neta media por persona"` y municipio 18087.
-3. Estructurar `{CUSEC: {año: €/persona}}`.
-4. Cuantiles pooled sobre todos los pares (sección, año).
-5. Paleta OrRd 5-class secuencial cálido.
+1. Descargar ADRH 31025 (cacheada) y filtrar municipio 18087.
+2. Extraer **3 indicadores**: `Mediana de la renta por unidad de consumo`,
+   `Renta neta media por hogar`, `Renta neta media por persona`.
+3. Estructurar `{CUSEC: {año: valor}}` por indicador.
+4. Cuantiles pooled **por variante** sobre todos los pares (sección, año).
+5. Paleta OrRd 5-class. El mapa colorea por `renta_med_uc`.
 
-**Agregación a barrio (build_barrios.py):** **media ponderada por población de la sección** para ese año. Las secciones sin renta o sin población no contribuyen.
+**Agregación a barrio (build_barrios.py):** **media ponderada por población de la
+sección**, por variante. ⚠️ Para `renta_hogar`/`renta_persona` es una media válida;
+para `renta_med_uc` es una **aproximación** (media ponderada de medianas de sección
+— la mediana no se agrega; la UI lo advierte en el tooltip).
 
 **Cobertura temporal:** 2015-2023. Para 2024-25 (rango del slider) la UI muestra el dato más reciente.
 
-**Interpretación:** renta neta media por persona ≠ ingreso por declarante IRPF. ADRH cruza Padrón × IRPF a nivel persona, por tanto incluye no declarantes (rentas bajas y menores).
+**Interpretación:** la **mediana por unidad de consumo** representa el hogar "del
+medio" ajustado por tamaño/composición; es más robusta que la media (no la
+distorsionan las rentas altas) y es el estándar de pobreza/desigualdad de Eurostat/INE.
+Distinta del ingreso por declarante IRPF (F6, M19), que es contable y por contribuyente.
+
+**Por qué tres variantes:** "por persona" (per cápita) parece baja porque reparte
+entre todos los miembros, incluidos los que no ingresan; "por hogar" es mayor y más
+intuitiva; la mediana UC es la comparación de referencia. Mostrarlas juntas es una
+lección de alfabetización de datos (la unidad cambia la cifra radicalmente).
 
 **Limitaciones:**
-- ADRH es estadística experimental — los valores se han revisado retrospectivamente en publicaciones sucesivas del INE.
-- La paleta no es comparable con la de M5 (VFT %): paletas distintas (OrRd vs PuRd) para evitar confusión visual.
+- ADRH es estadística experimental — revisada retrospectivamente por el INE.
+- La mediana UC se publica en escalones gruesos (múltiplos ~50 €) → tramos planos.
+- La paleta no es comparable con la de M5 (VFT %): paletas distintas (OrRd vs PuRd).
 
 ---
 
@@ -212,11 +227,13 @@ Mostrado con color verde si positivo, rojo si negativo.
 
 ---
 
-### M10 · Renta del año slider (con fallback)
+### M10 · Renta de la sección (3 variantes, con fallback)
 
-**Datos de entrada:** M4.
+**Datos de entrada:** M4 (`renta_med_uc`, `renta_hogar`, `renta_persona`).
 
-**Lógica de display:** si `renta[año_slider]` existe → mostrar; si no, caer al año más reciente disponible (`renta[max(años)]`) y anotar entre paréntesis qué año es.
+**Lógica de display:** la ficha muestra **las tres variantes** con su unidad
+(€/UC, €/hogar, €/persona). Para cada una: si existe el año del slider → mostrar;
+si no, caer al año más reciente disponible y anotar el año entre paréntesis.
 
 ---
 
@@ -240,7 +257,7 @@ Cada ranking ordena las features de la capa de área activa (secciones o barrios
 | ID | Tab | Métrica | Origen | Formato |
 |---|---|---|---|---|
 | M12 | "Población" | `poblaciones[año]` | M1 | "N hab." |
-| M13 | "Renta" | `renta[año]` con fallback | M4 | "N €/p" |
+| M13 | "Renta" | `renta_med_uc[año]` (mediana UC) con fallback | M4 | "N €/UC" |
 | M14 | "Verde/hab" | `superficie_verde_m2 / poblaciones[año]` | M2 | "X.X m²/hab" |
 | M15 | "Peor NO₂" | NO₂ vía estación más cercana / `no2_serie` | M3 | "X.X µg/m³" |
 | M16 | "Crecimiento" | `(pob[año_slider] - pob[primer_año]) / pob[primer_año] × 100` | M1 | "±X.X %" |
@@ -296,6 +313,30 @@ Cada ranking ordena las features de la capa de área activa (secciones o barrios
 
 ---
 
+### M19b · Renta ADRH municipal (3 variantes)
+
+**Objetivo:** mostrar la evolución de la renta de la ciudad según la unidad de
+medida, como complemento espacial de M4 (la misma fuente, agregada al municipio).
+
+**Datos de entrada:** F2 (ADRH 31025), **fila de municipio** de Granada → bloque
+`renta_adrh` de `demografia.json` (`build_demografia.py`).
+
+**Métricas mostradas (gráfica del panel "Ciudad", pestaña "Renta"):**
+- Big number: mediana UC del último año (2023 = 19.950 €).
+- Tres líneas 2015-2023: **mediana (UC)**, **media/hogar**, **media/persona**.
+
+**Distinción importante:** son **valores municipales oficiales del INE**, no la
+agregación de las secciones. La mediana municipal (19.950 € en 2023) ≠ la mediana
+de las medianas de sección (20.650 €) — por eso se usa el dato oficial, no se agrega.
+Esta gráfica es distinta de **M19** (AEAT, renta por declarante): se muestran juntas
+en la misma pestaña, cada una con su fuente.
+
+**Limitaciones:**
+- Mismas que F2 (experimental, mediana en escalones gruesos → tramos planos).
+- Cobertura 2015-2023 (no hay 2024-2025 oficial todavía).
+
+---
+
 ### M20 · Serie municipal acumulada de VFTs
 
 **Datos de entrada:** F1 (subset cacheado + datos espaciales agregados).
@@ -327,11 +368,12 @@ para cada año Y en serie_years:
 | M1 Población | 2015-2025 | 2015-2025 | — |
 | M2 Verde/hab | 2015-2025 | 2015-2025 | — |
 | M3 NO₂ | 2001-2024 | 2015-2025 | gris si no hay dato |
-| M4 Renta sec/barrio | 2015-2023 | 2015-2025 | fallback al último año |
+| M4 Renta sec/barrio (mediana UC) | 2015-2023 | 2015-2025 | fallback al último año |
 | M5 VFT % | 2016-2025 | 2015-2025 | 2015 = 0; 2026+ no aplica |
 | M17 Pirámide | 2003-2025 | 2003-2025 (slider propio) | — |
 | M18 Serie 1996+ | 1996-2025 | 1996-2025 (slider propio) | — |
-| M19 Renta IRPF | 2013-2023 | independiente | — |
+| M19 Renta IRPF (AEAT) | 2013-2023 | independiente | — |
+| M19b Renta ADRH muni | 2015-2023 | independiente | — |
 | M20 VFT muni | 2016-2025 | 2015-2025 (slider mapa) | 2015 = 0 |
 
 ---

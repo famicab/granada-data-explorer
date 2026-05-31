@@ -16,7 +16,7 @@ const NIVEL_LABELS: Record<string, string> = {
 
 const METRIC_LABELS: Record<SeccionMetric, string> = {
   pop: "Habitantes",
-  renta: "Renta neta media",
+  renta: "Renta mediana",
   vft_ratio: "VFTs / 100 viviendas",
   verde_hab: "Verde por hab.",
   no2_exposure: "Exposición NO₂",

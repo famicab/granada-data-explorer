@@ -81,6 +81,7 @@ interface Props {
   onSelectArea: (area: AreaProps) => void;
   year: number | null;
   metric: SeccionMetric;
+  rentaKey?: string;
   flyTarget?: FlyTarget | null;
 }
 
@@ -123,7 +124,8 @@ function choroplethValue(
   feature: GeoJSON.Feature | undefined,
   year: number | null,
   metric: SeccionMetric,
-  estacionesNo2?: Record<string, Record<string, number>>
+  estacionesNo2?: Record<string, Record<string, number>>,
+  rentaKey: string = "renta"
 ): number | undefined {
   const props = feature?.properties as Record<string, any> | undefined;
   if (!props) return undefined;
@@ -148,7 +150,7 @@ function choroplethValue(
   }
   if (metric === "renta") {
     if (year == null) return undefined;
-    const series = props.renta as Record<string, number> | undefined;
+    const series = props[rentaKey] as Record<string, number> | undefined;
     if (!series) return undefined;
     const direct = series[String(year)];
     if (typeof direct === "number") return direct;
@@ -184,9 +186,10 @@ function choroplethStyle(
   metric: SeccionMetric,
   breaks: number[],
   colors: string[],
-  estacionesNo2?: Record<string, Record<string, number>>
+  estacionesNo2?: Record<string, Record<string, number>>,
+  rentaKey: string = "renta"
 ): PathOptions {
-  const v = choroplethValue(feature, year, metric, estacionesNo2);
+  const v = choroplethValue(feature, year, metric, estacionesNo2, rentaKey);
   const fill = v != null ? colors[classIndex(v, breaks)] : "#cccccc";
   return { color: "#fff", weight: 0.6, fillColor: fill, fillOpacity: 0.7 };
 }
@@ -204,11 +207,12 @@ function missingValueHint(
   feature: GeoJSON.Feature | undefined,
   year: number | null,
   metric: SeccionMetric,
-  estacionesNo2?: Record<string, Record<string, number>>
+  estacionesNo2?: Record<string, Record<string, number>>,
+  rentaKey: string = "renta"
 ): string | null {
   const props = feature?.properties as Record<string, any> | undefined;
   if (!props || year == null) return null;
-  if (choroplethValue(feature, year, metric, estacionesNo2) != null) return null;
+  if (choroplethValue(feature, year, metric, estacionesNo2, rentaKey) != null) return null;
 
   if (metric === "pop" || metric === "verde_hab") {
     const pobs = props.poblaciones as Record<string, number> | undefined;
@@ -399,6 +403,7 @@ export default function GranadaMap({
   onSelectArea,
   year,
   metric,
+  rentaKey = "renta",
   flyTarget = null,
 }: Props) {
   // Refs para recolorear capas dinámicas sin remontarlas:
@@ -433,7 +438,7 @@ export default function GranadaMap({
       : metric === "no2_exposure"
       ? choroMeta?.no2_breaks
       : metric === "renta"
-      ? choroMeta?.renta_breaks
+      ? ((choroMeta as any)?.[`${rentaKey}_breaks`] as number[] | undefined)
       : metric === "vft_ratio"
       ? choroMeta?.vft_breaks
       : choroMeta?.poblacion_breaks;
@@ -443,7 +448,7 @@ export default function GranadaMap({
       : metric === "no2_exposure"
       ? choroMeta?.no2_colors
       : metric === "renta"
-      ? choroMeta?.renta_colors
+      ? ((choroMeta as any)?.[`${rentaKey}_colors`] as string[] | undefined)
       : metric === "vft_ratio"
       ? choroMeta?.vft_colors
       : choroMeta?.poblacion_colors;
@@ -459,15 +464,15 @@ export default function GranadaMap({
     gj.eachLayer((sub: any) => {
       const f = sub.feature as GeoJSON.Feature | undefined;
       if (!f) return;
-      sub.setStyle(choroplethStyle(f, year, metric, breaks, colors, estacionesNo2));
-      const hint = missingValueHint(f, year, metric, estacionesNo2);
+      sub.setStyle(choroplethStyle(f, year, metric, breaks, colors, estacionesNo2, rentaKey));
+      const hint = missingValueHint(f, year, metric, estacionesNo2, rentaKey);
       if (hint) {
         sub.bindTooltip(hint, { sticky: true, direction: "top" });
       } else if (sub.getTooltip()) {
         sub.unbindTooltip();
       }
     });
-  }, [year, metric, breaks, colors, estacionesNo2, choroLayer?.data]);
+  }, [year, metric, rentaKey, breaks, colors, estacionesNo2, choroLayer?.data]);
 
   // Recolorea los marcadores de estación al cambiar año (sin remontarlos).
   useEffect(() => {
@@ -518,7 +523,8 @@ export default function GranadaMap({
                     metric,
                     breaks ?? [],
                     colors ?? [],
-                    estacionesNo2
+                    estacionesNo2,
+                    rentaKey
                   )
                 : isVerde
                 ? verdeStyle(layer.color)

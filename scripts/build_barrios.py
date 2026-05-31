@@ -147,9 +147,13 @@ def main() -> None:
         # Suma de POIs por categoría que caen dentro de las secciones del
         # barrio. Solo se agrega si las secciones lo traen.
         equip_totals: dict[str, int] = {}
-        # Renta agregada: por cada año recogemos (valor_seccion, pob_seccion)
-        # para luego calcular media ponderada por población.
-        renta_samples: dict[str, list[tuple[int, int]]] = {}
+        # Renta agregada, por variante: {key: {año: [(valor, pob), ...]}} para
+        # media ponderada por población. OJO: la mediana por unidad de consumo
+        # así agregada es una APROXIMACIÓN a nivel barrio (media ponderada de
+        # medianas de sección); la UI lo advierte.
+        renta_samples: dict[str, dict[str, list[tuple[int, int]]]] = {
+            "renta_med_uc": {}, "renta_hogar": {}, "renta_persona": {}
+        }
         # VFT agregado: sumamos VFTs, plazas y viviendas estimadas de
         # las secciones (denominador ya está pre-calculado por sección).
         vft_n = 0
@@ -176,12 +180,12 @@ def main() -> None:
                 equip_totals[cat] = equip_totals.get(cat, 0) + int(
                     (info or {}).get("n_dentro", 0)
                 )
-            # Renta neta media por persona: muestreamos por año (ponderada
-            # por población de la sección).
-            for y, r in (p.get("renta") or {}).items():
-                pob_y = secc_pobs.get(y)
-                if isinstance(r, (int, float)) and pob_y and pob_y > 0:
-                    renta_samples.setdefault(y, []).append((int(r), int(pob_y)))
+            # Renta: muestreamos cada variante por año, ponderada por población.
+            for key in renta_samples:
+                for y, r in (p.get(key) or {}).items():
+                    pob_y = secc_pobs.get(y)
+                    if isinstance(r, (int, float)) and pob_y and pob_y > 0:
+                        renta_samples[key].setdefault(y, []).append((int(r), int(pob_y)))
             # VFT: agregamos absolutos y dejamos el ratio para el final
             # con el denominador real (suma de viviendas por sección).
             vft = p.get("vft") or {}
@@ -237,17 +241,20 @@ def main() -> None:
                 cat: {"n_dentro_total": equip_totals[cat]}
                 for cat in equip_totals
             }
-        # Media ponderada de renta por año (peso = población de la sección
-        # ese año). Solo se incluye si hubo al menos una sección con dato.
-        if renta_samples:
+        # Media ponderada por población, por variante (peso = población de la
+        # sección ese año). Solo se incluye si hubo al menos una sección con dato.
+        for key, per_year in renta_samples.items():
             renta_year: dict[str, int] = {}
-            for y, samples in renta_samples.items():
+            for y, samples in per_year.items():
                 num = sum(r * w for r, w in samples)
                 den = sum(w for _, w in samples)
                 if den > 0:
                     renta_year[y] = round(num / den)
             if renta_year:
-                props["renta"] = renta_year
+                props[key] = renta_year
+        # Alias de compatibilidad: `renta` = variante por defecto (mediana UC).
+        if props.get("renta_med_uc"):
+            props["renta"] = props["renta_med_uc"]
         if vft_any_section_con_denominador and vft_viviendas > 0:
             vft_ratio = round(vft_n / vft_viviendas * 100, 2)
         else:
@@ -277,17 +284,21 @@ def main() -> None:
                 vh_vals.append(g / v)
     vh_breaks = [round(b, 1) for b in quantile_breaks(vh_vals)] if vh_vals else []
 
-    # Renta: pooled sobre (barrio, año) — alineado con secciones para que la
-    # leyenda sea consistente al cambiar de nivel territorial.
-    renta_vals: list[int] = [
-        int(v)
-        for f in features
-        for v in (f["properties"].get("renta") or {}).values()
-        if isinstance(v, (int, float))
-    ]
-    renta_breaks = [round(b) for b in quantile_breaks(renta_vals)] if renta_vals else []
+    # Renta: pooled sobre (barrio, año) por variante — alineado con secciones
+    # para que la leyenda sea consistente al cambiar de nivel territorial.
+    RENTA_KEYS = ("renta_med_uc", "renta_hogar", "renta_persona")
+    renta_breaks_by_key: dict[str, list[int]] = {}
+    for key in RENTA_KEYS:
+        vals = [
+            int(v)
+            for f in features
+            for v in (f["properties"].get(key) or {}).values()
+            if isinstance(v, (int, float))
+        ]
+        if vals:
+            renta_breaks_by_key[key] = [round(b) for b in quantile_breaks(vals)]
     renta_anios = sorted(
-        {int(y) for f in features for y in (f["properties"].get("renta") or {})}
+        {int(y) for f in features for y in (f["properties"].get("renta_med_uc") or {})}
     )
 
     fc = {
@@ -301,10 +312,14 @@ def main() -> None:
         "no2_breaks": NO2_BREAKS,
         "no2_colors": NO2_COLORS,
     }
-    if renta_breaks:
-        fc["renta_breaks"] = renta_breaks
-        fc["renta_colors"] = RENTA_RAMP
+    for key, brks in renta_breaks_by_key.items():
+        fc[f"{key}_breaks"] = brks
+        fc[f"{key}_colors"] = RENTA_RAMP
+    if renta_breaks_by_key:
         fc["renta_anios"] = renta_anios
+        # Alias de compatibilidad: `renta` = variante por defecto (mediana UC).
+        fc["renta_breaks"] = renta_breaks_by_key.get("renta_med_uc", [])
+        fc["renta_colors"] = RENTA_RAMP
 
     # VFT: cortes fijos (no cuantiles) compartidos con secciones — así el
     # mismo color significa la misma franja de presión turística al
@@ -337,15 +352,15 @@ def main() -> None:
         print(f"  anios: {anios[0]}-{anios[-1]} ({len(anios)} anios)")
     print(f"  pop  breaks: {pop_breaks}")
     print(f"  v/h  breaks: {vh_breaks}")
-    if renta_breaks:
+    if renta_breaks_by_key:
         n_barrios_renta = sum(
-            1 for f in features if f["properties"].get("renta")
+            1 for f in features if f["properties"].get("renta_med_uc")
         )
         print(
             f"  renta {renta_anios[0]}-{renta_anios[-1]} "
-            f"({n_barrios_renta} barrios, ponderada por poblacion)"
+            f"({n_barrios_renta} barrios · 3 variantes, ponderada por poblacion)"
         )
-        print(f"  renta breaks: {renta_breaks}")
+        print(f"  renta breaks med_uc: {renta_breaks_by_key.get('renta_med_uc')}")
     if vft_ratios:
         n_b_vft = sum(
             1 for f in features
