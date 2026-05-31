@@ -1442,6 +1442,12 @@ body {
     right: 8px;
     bottom: 12px;
   }
+  /* La atribución de OSM (z-index 1000) se pintaba sobre el slider flotante.
+     Ambos deben quedar visibles (la atribución es obligatoria por ODbL), así
+     que la subimos por encima del slider en móvil. */
+  .leaflet-bottom.leaflet-right {
+    bottom: 64px;
+  }
   /* Drawer pasa a bottom-sheet */
   .lp-drawer {
     top: auto;
