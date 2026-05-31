@@ -1443,6 +1443,14 @@ body {
     /* La atribución de OSM va pegada al borde inferior (una línea); el slider
        queda justo encima, sin solaparse. */
     bottom: 30px;
+    /* En móvil, "Pob. total" baja a su propia línea para no desbordar; el
+       slider crece hacia arriba (bottom anclado), sin volver a tapar nada. */
+    flex-wrap: wrap;
+  }
+  .year-slider.stage-bottom .year-total {
+    flex-basis: 100%;
+    text-align: center;
+    margin-top: 2px;
   }
   /* Drawer pasa a bottom-sheet */
   .lp-drawer {
