@@ -186,11 +186,25 @@ export default function RentaMunicipalChart({
           </div>
         </div>
         <div className="muni-side">
-          {lastDisp != null && (
-            <div>
-              <strong>{fmt(lastDisp)} €</strong> renta disponible
-            </div>
-          )}
+          <div
+            className="serie-hover-item"
+            title="Ingresos totales declarados, antes del IRPF."
+          >
+            <span className="dot" style={{ background: COL_BRUTA }} /> Renta bruta
+          </div>
+          <div
+            className="serie-hover-item"
+            title="Renta bruta menos la cuota del IRPF: lo que queda disponible."
+          >
+            <span className="dot" style={{ background: COL_DISP }} /> Renta
+            disponible
+            {lastDisp != null && (
+              <>
+                {" "}
+                · <strong>{fmt(lastDisp)} €</strong>
+              </>
+            )}
+          </div>
           {deltaPct != null && (
             <div className="muni-delta">
               {deltaPct >= 0 ? "↑" : "↓"} {deltaPct >= 0 ? "+" : ""}
@@ -348,6 +362,18 @@ export default function RentaMunicipalChart({
           </span>
         </div>
       )}
+      <div
+        style={{
+          marginTop: 6,
+          fontSize: "0.7rem",
+          lineHeight: 1.4,
+          color: "#6b7280",
+        }}
+      >
+        <strong>Bruta:</strong> ingresos declarados antes de impuestos. ·{" "}
+        <strong>Disponible:</strong> lo que queda tras pagar el IRPF. Ambas por
+        declarante.
+      </div>
       <div className="renta-fuente">Fuente: {data.fuente}</div>
     </div>
   );
