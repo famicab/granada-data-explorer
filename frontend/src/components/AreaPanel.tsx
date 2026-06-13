@@ -11,6 +11,9 @@ export interface VftBlock {
   n_vfts: number;
   n_plazas: number;
   viviendas_total: number | null;
+  // Origen del denominador: "censo2021" (real) o "estimada" (pob/hogar, solo
+  // en secciones sin pareo censal por cambios de seccionado 2021↔2026).
+  viviendas_fuente?: string | null;
   ratio_vft_pct: number | null;
   // Acumulado anual de VFTs activas hoy registradas hasta fin de cada año
   // (clave = año como string). Reconstruido desde `registration_date` —
@@ -559,6 +562,9 @@ function VftBlockView({
   const usingSerie = nAtYear != null;
   const nMostrado = usingSerie ? nAtYear! : vft.n_vfts;
   const viviendas = vft.viviendas_total;
+  // Denominador estimado (no censal): solo las pocas secciones sin pareo en
+  // el Censo 2021. Lo señalamos para no presentar una estimación como dato real.
+  const estimada = vft.viviendas_fuente === "estimada";
   const ratioMostrado =
     viviendas != null && viviendas > 0
       ? (nMostrado / viviendas) * 100
@@ -597,8 +603,16 @@ function VftBlockView({
             {ratioMostrado.toFixed(1)}%
           </strong>{" "}
           <span className="sp-sub">
-            ({fmt(nMostrado)} VFT / {fmt(viviendas)} viviendas)
+            ({fmt(nMostrado)} VFT / {fmt(viviendas)} viviendas
+            {estimada ? " estimadas" : ""})
           </span>
+          {estimada && (
+            <div className="sp-sub">
+              Sin recuento del Censo 2021 en esta sección (cambio de
+              seccionado); viviendas estimadas como población ÷ tamaño medio
+              del hogar.
+            </div>
+          )}
         </div>
       )}
       {alta && (
