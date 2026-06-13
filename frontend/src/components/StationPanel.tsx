@@ -214,32 +214,37 @@ export default function StationPanel({
 
   const serie = series[param] ?? [];
   const unidad = contaminantes.find((c) => c.param === param)?.unidad ?? "";
-  const otros = contaminantes.filter((c) => c.param !== "NO2");
 
-  // NO2 del año seleccionado (con bandas/nivel calculados localmente). Cae al
-  // valor estático "latest" del backend si el slider aún no está fijado.
-  const seriesNO2 = series.NO2 ?? [];
-  const yearPoint = year != null ? seriesNO2.find((p) => p.anio === year) : null;
-  const headerNO2 = yearPoint?.valor ?? station.no2;
-  const headerYear = yearPoint?.anio ?? station.no2_anio;
+  // Color de estado de un contaminante por su último valor frente al límite UE
+  // (misma lógica que la gráfica); gris si no tiene referencia anual.
+  const chipColor = (p: string, v: number) =>
+    LIMITES[p] != null ? bandColor(v, LIMITES[p]) : NEUTRO;
+
+  // Cabecera del contaminante seleccionado: valor del año del slider si existe,
+  // si no el último de la serie. El nivel se clasifica por bandas frente al
+  // límite UE (mismo criterio que la gráfica); sin etiqueta de nivel cuando el
+  // contaminante no tiene referencia anual (NO, O3, CO).
+  const limiteSel = LIMITES[param];
+  const yearPoint = year != null ? serie.find((p) => p.anio === year) : null;
+  const headerPoint = yearPoint ?? serie[serie.length - 1] ?? null;
+  const headerVal = headerPoint?.valor ?? null;
+  const headerYear = headerPoint?.anio;
   const headerLevel =
-    headerNO2 == null
-      ? "sin datos"
-      : headerNO2 < 20
+    headerVal == null || limiteSel == null
+      ? null
+      : headerVal < limiteSel / 2
       ? "bueno"
-      : headerNO2 < 40
+      : headerVal < limiteSel
       ? "moderado"
       : "alto (supera límite UE)";
   const headerColor =
-    headerNO2 == null
+    headerVal == null
       ? "#9ca3af"
-      : headerNO2 < 20
-      ? VERDE
-      : headerNO2 < 40
-      ? AMARILLO
-      : ROJO;
+      : limiteSel == null
+      ? NEUTRO
+      : bandColor(headerVal, limiteSel);
   const sinDatoEseAnio =
-    year != null && seriesNO2.length > 0 && yearPoint == null;
+    year != null && serie.length > 0 && yearPoint == null;
 
   return (
     <div className="detail-panel">
@@ -255,12 +260,14 @@ export default function StationPanel({
       )}
       {sinDatoEseAnio ? (
         <div className="sp-no2" style={{ color: "#6b7280" }}>
-          NO₂ {year}: sin datos
+          {label(param)} {year}: sin datos
         </div>
-      ) : headerNO2 != null ? (
+      ) : headerVal != null ? (
         <div className="sp-no2">
-          NO₂ {headerNO2} µg/m³{" "}
-          <span style={{ color: headerColor }}>({headerLevel})</span>
+          {label(param)} {headerVal} {unidad}
+          {headerLevel ? (
+            <> <span style={{ color: headerColor }}>({headerLevel})</span></>
+          ) : null}
           {headerYear ? ` · ${headerYear}` : ""}
         </div>
       ) : null}
@@ -269,36 +276,40 @@ export default function StationPanel({
         <span className="sp-chart-title">
           {label(param)} media anual{unidad ? ` (${unidad})` : ""}
         </span>
-        {opciones.length > 1 && (
-          <select
-            className="sp-select"
-            value={param}
-            onChange={(e) => setParam(e.target.value)}
-            aria-label="Contaminante"
-          >
-            {opciones.map((p) => (
-              <option key={p} value={p}>{label(p)}</option>
-            ))}
-          </select>
-        )}
       </div>
       {serie.length >= 2 ? (
         <PollutantChart serie={serie} param={param} year={year} unidad={unidad} />
       ) : (
         <div className="sp-sub">Serie temporal insuficiente.</div>
       )}
+      {serie.length >= 2 && LIMITES[param] == null && (
+        <div className="sp-sub">Sin límite anual UE para este contaminante.</div>
+      )}
 
-      {otros.length > 0 && (
-        <details className="sp-otros">
-          <summary>Valores recientes ({otros.length})</summary>
-          <ul>
-            {otros.map((c) => (
-              <li key={c.param}>
-                {label(c.param)}: {c.valor} {c.unidad} <span className="sp-anio">({c.anio})</span>
-              </li>
-            ))}
-          </ul>
-        </details>
+      {contaminantes.length > 1 && (
+        <div className="sp-pollutants" role="tablist" aria-label="Contaminantes">
+          {contaminantes.map((c) => {
+            const plottable = (series[c.param]?.length ?? 0) >= 2;
+            const active = c.param === param;
+            return (
+              <button
+                key={c.param}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                className={`sp-chip${active ? " is-active" : ""}`}
+                disabled={!plottable}
+                onClick={() => plottable && setParam(c.param)}
+                title={`${label(c.param)}: ${c.valor} ${c.unidad} (${c.anio})`}
+              >
+                <span className="sp-chip-dot"
+                      style={{ background: chipColor(c.param, c.valor) }} />
+                <span className="sp-chip-label">{label(c.param)}</span>
+                <span className="sp-chip-val">{c.valor}</span>
+              </button>
+            );
+          })}
+        </div>
       )}
       </div>
     </div>
