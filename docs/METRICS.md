@@ -140,24 +140,28 @@ lección de alfabetización de datos (la unidad cambia la cifra radicalmente).
 
 **Objetivo:** cuantificar la presión turística sobre el parque residencial de cada sección/barrio.
 
-**Datos de entrada:** F1 (OpenRTA) + F3 (tamaño hogar) + F4/F3 (población última) + F8 (secciones).
+**Datos de entrada:** F1 (OpenRTA) + F10 (viviendas Censo 2021) + F8 (secciones). Fallback: F3 (tamaño hogar) + F4/F3 (población) solo en secciones sin pareo censal.
 
 **Fórmula (por sección y año):**
 ```
-viviendas_total ≈ poblacion_año_más_reciente / tamaño_medio_hogar_2023
-ratio[año] = n_vfts_acumuladas_hasta_año / viviendas_total × 100
+viviendas_total = viviendas familiares totales del Censo 2021 (INE)   # parque completo
+ratio[año]      = n_vfts_acumuladas_hasta_año / viviendas_total × 100
 ```
+Denominador = **todo el parque de viviendas** (incluida secundaria y vacía), no solo
+las ocupadas. *Fallback* en las 2 secciones sin pareo censal (cambios de seccionado
+2021↔2026): `viviendas_total ≈ poblacion / tamaño_medio_hogar_2023` (marcado en
+`vft.viviendas_fuente = "estimada"`).
 
 **Pasos de cálculo (build_vft.py):**
 1. Descargar y cachear OpenRTA filtrado a VFTs Granada (~3.6 k registros).
 2. Spatial-join VFT→sección en EPSG:25830.
 3. Por cada sección, guardar la lista de años de `registration_date`.
-4. Calcular `viviendas_total = max(1, round(pob_2025 / tamaño_hogar_2023))`.
+4. `viviendas_total = viviendas familiares Censo 2021 (col. t18_1)` por `CUSEC`; si la sección no cruza, fallback `max(1, round(pob_2025 / tamaño_hogar_2023))`.
 5. Para cada año del slider (2015-2025), calcular el cumulativo de VFTs registradas ≤ ese año.
 6. `ratio[año] = cumulativo_año / viviendas_total × 100`.
 7. Cortes **fijos semánticos** (no cuantiles): `[1, 3, 7, 12, 20, 30]` % → 7 clases PuRd.
 
-**Por qué cortes fijos y no cuantiles:** la distribución es muy sesgada (mediana ~1,3 %, máximo ~46 %). Los cuantiles colapsaban todo el casco histórico en un mismo color; los cortes fijos diferencian "testimonial / moderado / notable / alta / muy alta / severa / extrema".
+**Por qué cortes fijos y no cuantiles:** la distribución es muy sesgada (mediana ~0,8 %, máximo ~33 % sobre el parque total). Los cuantiles colapsaban todo el casco histórico en un mismo color; los cortes fijos diferencian "testimonial / moderado / notable / alta / muy alta / severa / extrema".
 
 **Agregación a barrio (build_barrios.py):** suma de VFTs / suma de viviendas (no media ponderada).
 
@@ -166,8 +170,9 @@ ratio[año] = n_vfts_acumuladas_hasta_año / viviendas_total × 100
 **Limitaciones:**
 - **Sesgo superviviente**: la serie histórica solo incluye VFTs que siguen activas hoy. Los años pasados están sub-estimados (las bajas anteriores no aparecen). La dirección de la tendencia es honesta; los valores absolutos del pasado no.
 - **No incluye VFTs ilegales** (sin registro RTA).
-- **Denominador fijo al año más reciente:** la evolución refleja únicamente cambios del numerador (más narrativa, menos ruido demográfico).
-- Tamaño medio del hogar congelado en 2023.
+- **Desfase temporal del denominador:** viviendas a 1-ene-2021 (Censo) vs VFTs snapshot ~2025. El parque cambia despacio, pero no están en el mismo año. El censo de viviendas es decenal/cada 3-4 años; 2021 es lo más reciente con detalle de sección.
+- **Denominador fijo entre años:** la evolución del ratio refleja únicamente cambios del numerador VFT (más narrativa, menos ruido).
+- **2 secciones (de 180) usan denominador estimado** (`pob/hogar`) por cambios de seccionado 2021↔2026; marcadas en `vft.viviendas_fuente`.
 
 ---
 
@@ -244,7 +249,7 @@ si no, caer al año más reciente disponible y anotar el año entre paréntesis.
 **Display:**
 - Número de VFTs acumuladas al año del slider.
 - Plazas totales (snapshot actual; no se recalculan por año).
-- Ratio % sobre viviendas estimadas.
+- Ratio % sobre viviendas totales (Censo 2021).
 - Si ratio ≥ 10 %, badge "⚠️ Alta presión turística".
 - Mini-chart SVG con la evolución completa de la serie + dots coloreados por banda.
 
@@ -348,7 +353,7 @@ en la misma pestaña, cada una con su fuente.
 
 **Fórmula (build_vft.py):**
 ```
-viviendas_total_muni = Σ viviendas_total[sección]  # ≈ 103 849
+viviendas_total_muni = Σ viviendas_total[sección]  # ≈ 139 740 (Censo 2021)
 para cada año Y en serie_years:
     vfts[Y] = #{VFT : registration_year ≤ Y}
     plazas[Y] = Σ plazas (VFT : registration_year ≤ Y)

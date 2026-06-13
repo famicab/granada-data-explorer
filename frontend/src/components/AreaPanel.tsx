@@ -591,7 +591,7 @@ function VftBlockView({
       {ratioMostrado != null && viviendas != null && (
         <div>
           <span className="sp-label">
-            Sobre el parque residencial{esBarrio ? " del barrio" : ""}:
+            Sobre el parque de viviendas{esBarrio ? " del barrio" : ""}:
           </span>{" "}
           <strong style={{ color: alta ? "#980043" : "#6b21a8" }}>
             {ratioMostrado.toFixed(1)}%

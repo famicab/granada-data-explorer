@@ -15,6 +15,7 @@ Inventario de todos los datasets de los que se alimenta el proyecto, en el orden
 | F7 | SIVA — históricos cuantitativos | Junta de Andalucía (CMAOT) | Calidad del aire |
 | F8 | Cartografía Censal | INE | Secciones censales |
 | F9 | OpenStreetMap | OSM Foundation | Barrios, distritos, POIs, viario, parques, terrazas |
+| F10 | Censo 2021 — Indicadores por sección | INE | Viviendas familiares totales (denominador VFT) |
 
 ---
 
@@ -378,6 +379,40 @@ Orden de precedencia para POIs con múltiples etiquetas: sanidad > educacion > a
 
 ---
 
+## F10 · INE Censo de Población y Viviendas 2021 — viviendas por sección
+
+**Organismo responsable:** INE.
+
+**URL de origen:** `https://www.ine.es/censos2021/C2021_Indicadores.csv` (fichero nacional de *indicadores por sección censal* del Censo 2021; ~8 MB, todas las secciones de España).
+
+**Fecha de referencia:** 1 de enero de 2021. El censo de viviendas se publica cada 3-4 años; a junio de 2026, 2021 es la referencia más reciente con detalle de **sección censal** (los censos anuales posteriores actualizan solo población y variables de residencia/empleo, no el recuento de viviendas).
+
+**Cobertura geográfica:** España completa; filtrado en pipeline a `cpro=18 & cmun=087` (Granada capital, 184 secciones en el seccionado 2021).
+
+**Formato original:** CSV `,` separado, UTF-8, columnas codificadas `t1_1…t22_5`. Las geográficas son `ccaa,cpro,cmun,dist,secc` → `CUSEC = cpro+cmun+dist+secc` (10 dígitos).
+
+**Columna utilizada:**
+| Columna | Significado | Uso |
+|---|---|---|
+| `t18_1` | **Viviendas familiares totales** | Denominador del ratio VFT (parque completo) |
+| `t19_1` / `t19_2` | Principales / no principales | No usadas (validación: 98.316 + 42.941 = 141.257) |
+
+**Validación:** la suma de `t18_1` en Granada capital = **141.257 viviendas**, que cuadra con el dato municipal oficial del Censo 2021 (141.258; diferencia de 1 por redondeo/seccionado).
+
+**Transformaciones aplicadas:**
+1. Descarga del CSV nacional (cache en `raw-data/censo2021_indicadores_seccion.csv`).
+2. Filtro Granada + extracción de `t18_1` por `CUSEC` → subset `raw-data/censo2021_viviendas_granada.csv`.
+3. Join por `CUSEC` al embeber `vft.viviendas_total` en `secciones_censales.geojson`.
+
+**Limitaciones:**
+- **Desfase de seccionado:** las viviendas están sobre el seccionado de 2021; la cartografía del proyecto es `seccionado_2026` (F8). 2 secciones de 180 no cruzan → fallback al estimador `pob/hogar` (marcado en `vft.viviendas_fuente`).
+- **Desfase temporal:** viviendas 2021 vs VFTs ~2025. Asumible (el parque cambia despacio), pero no es el mismo año.
+- Sin actualización anual del recuento de viviendas (limitación metodológica del INE, no del proyecto).
+
+**Pipeline:** [scripts/build_vft.py](../scripts/build_vft.py)
+
+---
+
 ## Huecos pendientes
 
 Estado tras dos rondas de verificación:
@@ -395,6 +430,7 @@ Estado tras dos rondas de verificación:
 | F8 INE Cartografía Censal | ✅ Documentado | `seccionado_2026.zip` + filtro QGIS `CUMUN='18087'`. |
 | F9 OSM — Parques/Jardines/Arbolado/Calles/Carreteras/POIs | ✅ Documentado | Queries preservadas en `raw-data/GIS/queries/overpass.txt`. |
 | F9 OSM — Barrios/Distritos/Terrazas/granada.pbf | ⚠️ Queries no preservadas | Sin query guardada. Para Barrios y Distritos las plantillas administrativas (`admin_level=10` y `=9`) son obvias; Terrazas es ambiguo y `granada.pbf` no se usa actualmente en el pipeline. Decisión del autor: dejar como está. |
+| F10 Censo 2021 viviendas por sección | ✅ Documentado | URL pública, columna `t18_1` validada contra total municipal (141.257). 2 secciones sin pareo por seccionado 2021↔2026. |
 
 **Próximas acciones recomendadas:**
 1. Pedir a la Junta de Andalucía confirmación de los códigos SIVA 7 y 10 (única ambigüedad de identidad sin documentar oficialmente).

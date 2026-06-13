@@ -3,7 +3,7 @@ import { useState } from "react";
 // Datos municipales agregados de VFT (panel "Ciudad" > tab Turismo).
 // El shape proviene de demografia.json.vft_municipal — escrito por
 // scripts/build_vft.py al final del pipeline (suma sobre todas las
-// secciones, denominador = parque residencial municipal estimado).
+// secciones, denominador = viviendas familiares totales del Censo 2021).
 
 export interface VftMunicipalData {
   anios: number[];
@@ -155,7 +155,7 @@ export default function VftMunicipalChart({
                 "—"}
               %
             </strong>{" "}
-            sobre el parque residencial
+            sobre el parque de viviendas
           </div>
           {deltaPct != null && deltaPct > 0 && (
             <div className="muni-delta">
@@ -306,7 +306,7 @@ export default function VftMunicipalChart({
           </span>
           {data.ratio_vft_pct[focusIdx] != null && (
             <span className="serie-hover-item">
-              {fmtPct(data.ratio_vft_pct[focusIdx]!)} residencial
+              {fmtPct(data.ratio_vft_pct[focusIdx]!)} del parque
             </span>
           )}
         </div>
