@@ -75,8 +75,11 @@ límites de sus datos. Os doy tres ejemplos. La serie histórica de vivienda tur
 solo incluye los pisos que siguen activos hoy, así que el pasado está subestimado: la
 tendencia es fiable, pero las cifras absolutas de hace años no. La calidad del aire se
 apoya en solo dos estaciones para toda la ciudad, así que es una aproximación, no una
-medición fina calle a calle. Y algunos datos del INE son experimentales y se revisan
-con el tiempo. Cada métrica documenta estas limitaciones. Esto convierte la
+medición fina calle a calle. Y algunos datos del INE son experimentales: en concreto
+la renta por sección, que el INE no obtiene de una encuesta sino de cruzar el padrón
+con los datos fiscales del IRPF —de ahí que tengamos renta tan detallada—, pero que
+puede recalcular y revisar en años pasados cuando mejora el método. Cada métrica
+documenta estas limitaciones. Esto convierte la
 herramienta en una buena lección de alfabetización de datos: los datos abiertos son
 potentes, pero hay que leerlos con criterio.*
 

@@ -182,16 +182,20 @@ Canva, Beautiful.ai, Claude, Tome, etc.). Estructura:
   - Vivienda turística: solo pisos activos hoy → el pasado se subestima (tendencia
     fiable; cifras absolutas antiguas, no).
   - Calidad del aire: solo 2 estaciones → aproximación, no medición calle a calle.
-  - Algunos datos del INE son experimentales y se revisan.
+  - La renta por sección es una estadística **experimental** del INE (padrón × IRPF):
+    se revisa con el tiempo.
   - Cada métrica documenta sus límites.
 - **Sugerencia visual:** tono sobrio; quizá icono de "lupa/aviso". Es el corazón del
   mensaje educativo.
 - **Notas:** Lo más valioso del proyecto: es honesto sobre los límites de sus datos.
   La serie de vivienda turística solo incluye pisos activos hoy, así que el pasado se
   subestima: la tendencia es fiable, las cifras antiguas no. El aire se apoya en solo
-  dos estaciones: es una aproximación. Y algunos datos del INE son experimentales.
-  Cada métrica lo documenta. Es una buena lección de alfabetización de datos: hay que
-  leerlos con criterio.
+  dos estaciones: es una aproximación. Y algunos datos del INE son experimentales: en
+  concreto la renta por sección, que no sale de una encuesta sino de cruzar el padrón
+  con los datos fiscales del IRPF; eso da un detalle muy fino, pero el INE puede
+  recalcular y revisar años pasados cuando afina el método, así que una cifra de renta
+  puede cambiar en futuras actualizaciones. Cada métrica lo documenta. Es una buena
+  lección de alfabetización de datos: hay que leerlos con criterio.
 
 ### Diapositiva 9 — Lo que revela el mapa  *(insights)*
 - **Titular:** Lo que revela el mapa
