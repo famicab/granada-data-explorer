@@ -261,11 +261,54 @@ function styleFor(
   return { color: fallback, weight: 1.5, fillColor: fallback, fillOpacity: 0.25 };
 }
 
-// Zonas verdes sobre el choropleth: la forma se reconoce por el borde
-// marcado, el relleno queda muy translúcido para no tapar el color de la
-// sección de debajo.
+// Trama diagonal para zonas verdes: un patrón SVG por color de capa. La textura
+// (rayas) es un canal visual distinto del color plano del choropleth, así que
+// las zonas verdes se distinguen incluso sobre la coropleta de verde/hab — donde
+// antes "verde sobre verde" se fundía.
+const hatchId = (color: string) => `verde-hatch-${color.replace("#", "")}`;
+
+// Oscurece un hex multiplicando cada canal (para el borde nítido).
+function darken(hex: string, f = 0.55): string {
+  const n = parseInt(hex.slice(1), 16);
+  const r = Math.round(((n >> 16) & 255) * f);
+  const g = Math.round(((n >> 8) & 255) * f);
+  const b = Math.round((n & 255) * f);
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+}
+
+// <defs> ocultas con un patrón de rayas por color de zona verde. Los polígonos
+// lo referencian desde su fill vía url(#id) (resuelve a nivel de documento).
+function HatchDefs({ colors }: { colors: string[] }) {
+  const uniq = Array.from(new Set(colors));
+  return (
+    <svg aria-hidden="true" style={{ position: "absolute", width: 0, height: 0 }}>
+      <defs>
+        {uniq.map((c) => (
+          <pattern
+            key={c}
+            id={hatchId(c)}
+            width="6"
+            height="6"
+            patternUnits="userSpaceOnUse"
+            patternTransform="rotate(45)"
+          >
+            <line x1="0" y1="0" x2="0" y2="6" stroke={c} strokeWidth="2.4" />
+          </pattern>
+        ))}
+      </defs>
+    </svg>
+  );
+}
+
+// Zonas verdes sobre el choropleth: relleno con trama (textura) + borde oscuro
+// nítido, de modo que la forma se reconozca sobre cualquier color de sección.
 function verdeStyle(color: string): PathOptions {
-  return { color, weight: 1.4, fillColor: color, fillOpacity: 0.15 };
+  return {
+    color: darken(color),
+    weight: 1.6,
+    fillColor: `url(#${hatchId(color)})`,
+    fillOpacity: 1,
+  };
 }
 
 function pointToLayer(
@@ -488,13 +531,17 @@ export default function GranadaMap({
   }, [year, stationsLayer?.data]);
 
   return (
-    <MapContainer
-      center={GRANADA_CENTER}
-      zoom={14}
-      className="map-container"
-      style={{ height: "100%", width: "100%" }}
-      zoomControl={false}
-    >
+    <>
+      <HatchDefs
+        colors={layers.filter((l) => l.group === "verde").map((l) => l.color)}
+      />
+      <MapContainer
+        center={GRANADA_CENTER}
+        zoom={14}
+        className="map-container"
+        style={{ height: "100%", width: "100%" }}
+        zoomControl={false}
+      >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -561,6 +608,7 @@ export default function GranadaMap({
           />
         );
       })}
-    </MapContainer>
+      </MapContainer>
+    </>
   );
 }
